@@ -21,8 +21,12 @@ export default function ChatWindow() {
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedAnswerId, setSelectedAnswerId] = useState(null);
+  const [isTyping, setIsTyping] = useState(false);
 
+  const conversationRef = useRef(null);
+  const typingRef = useRef(null);
   const selectedAnswerRef = useRef(null);
+  const typingTimerRef = useRef(null);
   const hasAskedQuestion = messages.some((message) => message.role === "user");
 
   // Load all questions and answers from Excel API
@@ -53,16 +57,51 @@ export default function ChatWindow() {
     fetchFAQ();
   }, []);
 
-  // Bring the selected answer into view, even when more questions remain below.
   useEffect(() => {
-    selectedAnswerRef.current?.scrollIntoView({
+    return () => {
+      window.clearTimeout(typingTimerRef.current);
+    };
+  }, []);
+
+  // Scroll only the conversation panel to the answer for the selected question.
+  useEffect(() => {
+    const conversation = conversationRef.current;
+    const indicator = typingRef.current;
+
+    if (isTyping && conversation && indicator) {
+      const conversationTop = conversation.getBoundingClientRect().top;
+      const indicatorTop = indicator.getBoundingClientRect().top;
+
+      conversation.scrollTo({
+        top: conversation.scrollTop + indicatorTop - conversationTop - 16,
+        behavior: "smooth",
+      });
+    }
+  }, [isTyping]);
+
+  useEffect(() => {
+    const conversation = conversationRef.current;
+    const answer = selectedAnswerRef.current;
+
+    if (!conversation || !answer) {
+      return;
+    }
+
+    const conversationTop = conversation.getBoundingClientRect().top;
+    const answerTop = answer.getBoundingClientRect().top;
+
+    conversation.scrollTo({
+      top: conversation.scrollTop + answerTop - conversationTop - 16,
       behavior: "smooth",
-      block: "center",
     });
   }, [selectedAnswerId]);
 
   // When user clicks a question
   const selectQuestion = (item) => {
+    if (isTyping) {
+      return;
+    }
+
     setFaqData((previous) =>
       previous.filter((question) => question.id !== item.id),
     );
@@ -87,14 +126,20 @@ export default function ChatWindow() {
     }
 
     // Add chatbot answer
-    const botMessage = {
-      id: `answer-${item.id}-${Date.now()}`,
-      role: "assistant",
-      content: answer,
-    };
+    setMessages((previous) => [...previous, userMessage]);
+    setIsTyping(true);
 
-    setSelectedAnswerId(botMessage.id);
-    setMessages((previous) => [...previous, userMessage, botMessage]);
+    typingTimerRef.current = window.setTimeout(() => {
+      const botMessage = {
+        id: `answer-${item.id}-${Date.now()}`,
+        role: "assistant",
+        content: answer,
+      };
+
+      setSelectedAnswerId(botMessage.id);
+      setMessages((previous) => [...previous, botMessage]);
+      setIsTyping(false);
+    }, 1400);
   };
 
   return (
@@ -131,10 +176,15 @@ export default function ChatWindow() {
         <section className="chat-panel" aria-label="RC Labs support chat">
           <ChatHeader />
 
-          <div className="chat-conversation" aria-live="polite">
+          <div
+            ref={conversationRef}
+            className="chat-conversation"
+            aria-live="polite"
+          >
             <ChatMessages
               messages={messages}
-              loading={false}
+              loading={isTyping}
+              typingRef={typingRef}
               focusMessageId={selectedAnswerId}
               focusMessageRef={selectedAnswerRef}
             />
@@ -152,7 +202,7 @@ export default function ChatWindow() {
               </p>
             )}
 
-            {!dataLoading && !error && faqData.length > 0 && (
+            {!dataLoading && !error && !isTyping && faqData.length > 0 && (
               <FAQOptions
                 questions={faqData}
                 onSelect={selectQuestion}
@@ -160,7 +210,7 @@ export default function ChatWindow() {
               />
             )}
 
-            {!dataLoading && !error && faqData.length === 0 && (
+            {!dataLoading && !error && !isTyping && faqData.length === 0 && (
               <p className="empty-note">
                 {hasAskedQuestion
                   ? "You’ve explored all the quick questions. Scroll up to revisit an answer."

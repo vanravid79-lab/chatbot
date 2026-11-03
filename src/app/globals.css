@@ -349,6 +349,7 @@ button:focus-visible {
 
 .typing-indicator {
   display: flex;
+  min-height: 42px;
   align-items: flex-end;
   gap: 7px;
   color: var(--muted);
@@ -357,15 +358,20 @@ button:focus-visible {
 
 .typing-dots {
   display: flex;
-  gap: 4px;
-  border-radius: 16px 16px 16px 5px;
-  padding: 13px;
+  min-width: 62px;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid #e8e8e8;
+  border-radius: 18px 18px 18px 6px;
+  padding: 0 14px;
   background: #f0f0f0;
 }
 
 .typing-dots span {
-  width: 5px;
-  height: 5px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #8a8d91;
   animation: typing 1s infinite ease-in-out;

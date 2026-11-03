@@ -4,6 +4,7 @@ import TypingIndicator from "./TypingIndicator";
 export default function ChatMessages({
   messages,
   loading,
+  typingRef,
   focusMessageId,
   focusMessageRef,
 }) {
@@ -17,7 +18,7 @@ export default function ChatMessages({
         />
       ))}
 
-      {loading && <TypingIndicator />}
+      {loading && <TypingIndicator indicatorRef={typingRef} />}
     </div>
   );
 }
