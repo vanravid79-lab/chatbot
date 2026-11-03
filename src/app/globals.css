@@ -138,8 +138,8 @@ button:focus-visible {
 .faq-prompt {
   margin: 0 0 10px 2px;
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 650;
 }
 
 .faq-list {

@@ -27,7 +27,6 @@ export default function ChatWindow() {
   const selectedAnswerRef = useRef(null);
   const typingTimerRef = useRef(null);
   const hasAskedQuestion = messages.some((message) => message.role === "user");
-
   // Load all questions and answers from Excel API
   useEffect(() => {
     const fetchFAQ = async () => {
@@ -193,15 +192,14 @@ export default function ChatWindow() {
               <FAQOptions
                 questions={faqData}
                 onSelect={selectQuestion}
-                hasAskedQuestion={hasAskedQuestion}
               />
             )}
 
             {!dataLoading && !error && !isTyping && faqData.length === 0 && (
               <p className="empty-note">
                 {hasAskedQuestion
-                  ? "You’ve explored all the quick questions. Scroll up to revisit an answer."
-                  : "There are no quick questions available right now."}
+                  ? "You’ve explored all the questions. Scroll up to revisit an answer."
+                  : "There are no questions available right now."}
               </p>
             )}
           </div>

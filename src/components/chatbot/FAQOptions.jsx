@@ -1,24 +1,46 @@
 "use client";
 
-export default function FAQOptions({ questions, onSelect, hasAskedQuestion }) {
-  const nextQuestion = questions[0];
+import { useState } from "react";
 
-  if (!nextQuestion) {
+export default function FAQOptions({ questions, onSelect }) {
+  const [showAllQuestions, setShowAllQuestions] = useState(false);
+
+  if (questions.length === 0) {
     return null;
   }
 
+  const visibleQuestions = showAllQuestions ? questions : questions.slice(0, 3);
+  const remainingCount = questions.length - visibleQuestions.length;
+
   return (
-    <div className="faq-options">
-      <div className="faq-list">
+    <section className="faq-options" aria-label="All questions">
+      <h2 className="faq-prompt">Questions</h2>
+      <div className="faq-list" id="faq-question-list">
+        {visibleQuestions.map((question) => (
+          <button
+            key={question.id}
+            type="button"
+            onClick={() => onSelect(question)}
+            className="faq-button"
+          >
+            <span>{question.question}</span>
+            <span className="faq-arrow" aria-hidden="true">›</span>
+          </button>
+        ))}
+      </div>
+      {questions.length > 3 && (
         <button
           type="button"
-          onClick={() => onSelect(nextQuestion)}
-          className="faq-button"
+          className="faq-more"
+          aria-expanded={showAllQuestions}
+          aria-controls="faq-question-list"
+          onClick={() => setShowAllQuestions((showing) => !showing)}
         >
-          <span>{nextQuestion.question}</span>
-          <span className="faq-arrow" aria-hidden="true">›</span>
+          {showAllQuestions
+            ? "Show fewer questions"
+            : `See ${remainingCount} more questions`}
         </button>
-      </div>
-    </div>
+      )}
+    </section>
   );
 }
