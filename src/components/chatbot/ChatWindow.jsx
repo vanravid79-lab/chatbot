@@ -175,12 +175,6 @@ export default function ChatWindow() {
               focusMessageRef={selectedAnswerRef}
             />
 
-            {dataLoading && (
-              <p className="loading-note" role="status">
-                Loading helpful questions…
-              </p>
-            )}
-
             {error && (
               <p className="error-note" role="alert">
                 We couldn’t load the questions just now. Please refresh to try
@@ -189,10 +183,7 @@ export default function ChatWindow() {
             )}
 
             {!dataLoading && !error && !isTyping && faqData.length > 0 && (
-              <FAQOptions
-                questions={faqData}
-                onSelect={selectQuestion}
-              />
+              <FAQOptions questions={faqData} onSelect={selectQuestion} />
             )}
 
             {!dataLoading && !error && !isTyping && faqData.length === 0 && (
