@@ -4,9 +4,8 @@ export default function TypingIndicator({ indicatorRef }) {
       ref={indicatorRef}
       className="typing-indicator"
       role="status"
-      aria-label="RC Labs is typing"
+      aria-label="Assistant is typing"
     >
-      <div className="message-avatar" aria-hidden="true">RC</div>
       <div className="typing-dots" aria-hidden="true">
         <span />
         <span />

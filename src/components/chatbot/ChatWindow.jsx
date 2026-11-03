@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 
-import ChatHeader from "./ChatHeader";
 import ChatMessages from "./ChatMessages";
 import FAQOptions from "./FAQOptions";
 
@@ -146,16 +145,6 @@ export default function ChatWindow() {
     <main className="support-page">
       <div className="support-layout">
         <aside className="intro-panel">
-          <div className="brand-lockup">
-            <div className="brand-mark" aria-hidden="true">
-              RC
-            </div>
-            <div>
-              <div className="brand-name">RC Labs Cambodia</div>
-              <div className="brand-caption">Customer care</div>
-            </div>
-          </div>
-
           <div className="intro-copy">
             <div className="intro-eyebrow">Here to help</div>
             <h1>Good support starts with a conversation.</h1>
@@ -174,8 +163,6 @@ export default function ChatWindow() {
         </aside>
 
         <section className="chat-panel" aria-label="RC Labs support chat">
-          <ChatHeader />
-
           <div
             ref={conversationRef}
             className="chat-conversation"
