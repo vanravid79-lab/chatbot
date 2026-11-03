@@ -11,6 +11,7 @@ src/
   app/
     api/
       faqs/route.js                 # Serves FAQ data to the chat UI
+      faqs/[id]/route.js            # Reads, updates, or deletes one FAQ
       messenger/webhook/route.js    # Verifies and receives Meta webhooks
     page.js                         # Home page
     layout.js                       # App shell and page metadata
@@ -18,17 +19,67 @@ src/
   components/
     chatbot/                        # Chat window and reusable UI pieces
   lib/
+    faqApi.js                       # Shared FAQ request validation and auth
     excel.js                        # Reads FAQ questions from the workbook
+    faqStore.js                     # Reads and writes saved FAQ data
     faqSearch.js                    # Matches message text to an FAQ
   services/
     messengerService.js             # Sends Messenger replies
 data/
   RC_Labs.xlsx                      # FAQ source data
+  faqs.json                         # Created on the first FAQ write request
 ```
 
 The website UI lives in `components/chatbot`. API route files handle HTTP
 requests, `lib` contains reusable FAQ data and matching helpers, and `services`
 contains integrations such as Messenger.
+
+## Manage FAQs with the API
+
+`GET /api/faqs` returns the FAQ list. The first successful `POST`, `PUT`, or
+`DELETE` saves a copy of the workbook data to `data/faqs.json`; later requests
+read and update that JSON file, leaving the original Excel workbook unchanged.
+Use `/api/faqs/{id}` to get, update, or delete one FAQ.
+
+Set `FAQ_ADMIN_TOKEN` in `.env.local` before making write requests. Send it as a
+Bearer token in the `Authorization` header. Keep this token private.
+
+Create a question:
+
+```powershell
+Invoke-RestMethod -Uri http://localhost:3000/api/faqs -Method Post `
+  -Headers @{ Authorization = "Bearer YOUR_ADMIN_TOKEN" } `
+  -ContentType "application/json" `
+  -Body '{"category":"Products","question":"Where can I buy RC Labs?","answerEnglish":"Contact our Cambodia sales team.","answerKhmer":""}'
+```
+
+Get one question by ID:
+
+```powershell
+Invoke-RestMethod -Uri http://localhost:3000/api/faqs/41
+```
+
+Replace a question by ID (include all fields):
+
+```powershell
+Invoke-RestMethod -Uri http://localhost:3000/api/faqs/41 -Method Put `
+  -Headers @{ Authorization = "Bearer YOUR_ADMIN_TOKEN" } `
+  -ContentType "application/json" `
+  -Body '{"category":"Products","question":"Where can I buy RC Labs?","answerEnglish":"Ask our sales team.","answerKhmer":""}'
+```
+
+Delete a question by ID:
+
+```powershell
+Invoke-RestMethod -Uri http://localhost:3000/api/faqs/41 -Method Delete `
+  -Headers @{ Authorization = "Bearer YOUR_ADMIN_TOKEN" } `
+```
+
+Write requests return `401` if the token is missing or incorrect, and `503` if
+`FAQ_ADMIN_TOKEN` is not configured. Changes are saved on the server's local
+filesystem. For production, use a host with persistent writable storage or
+move FAQ storage to a database; some serverless hosts do not preserve local
+file changes between deployments or instances.
 
 ## Run locally
 
