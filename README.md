@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# RC Labs Cambodia support chatbot
 
-## Getting Started
+This Next.js app serves the RC Labs FAQ website and can reply to Facebook Page
+messages through the Messenger Platform. Messenger replies are matched against
+the questions and answers in `data/RC_Labs.xlsx`.
 
-First, run the development server:
+## Project structure
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```text
+src/
+  app/
+    api/
+      faqs/route.js                 # Serves FAQ data to the chat UI
+      messenger/webhook/route.js    # Verifies and receives Meta webhooks
+    page.js                         # Home page
+    layout.js                       # App shell and page metadata
+    globals.css                    # Global and chat UI styles
+  components/
+    chatbot/                        # Chat window and reusable UI pieces
+  lib/
+    excel.js                        # Reads FAQ questions from the workbook
+    faqSearch.js                    # Matches message text to an FAQ
+  services/
+    messengerService.js             # Sends Messenger replies
+data/
+  RC_Labs.xlsx                      # FAQ source data
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The website UI lives in `components/chatbot`. API route files handle HTTP
+requests, `lib` contains reusable FAQ data and matching helpers, and `services`
+contains integrations such as Messenger.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Run locally
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+Open `http://localhost:3000`.
 
-To learn more about Next.js, take a look at the following resources:
+## Connect a Facebook Page to Messenger
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Messenger cannot load the website chat UI inside the Messenger app. Instead,
+Meta sends incoming Page messages to this app's webhook, and this app sends FAQ
+answers back through the Messenger Send API.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Deploy this Next.js app to a host that supports Node.js Route Handlers and
+   gives it a public HTTPS URL. Make sure `data/RC_Labs.xlsx` is included in the
+   deployment.
+2. In the Meta for Developers dashboard, create an app, add the Messenger
+   product, and connect your Facebook Page.
+3. Configure these server-side environment variables in the hosting dashboard.
+   The names and placeholders are listed in `.env.example`; do not add real
+   credentials to source control or expose them as `NEXT_PUBLIC_*` variables.
+   - `META_APP_SECRET`: the app secret from Meta app settings.
+   - `META_VERIFY_TOKEN`: a random string you choose. Use the same value in
+     Meta's webhook configuration.
+   - `META_PAGE_ACCESS_TOKEN`: a Page access token with permission to send
+     messages for the connected Page.
+   - `META_GRAPH_API_VERSION`: a supported version, in the format `vNN.N`,
+     currently available to your Meta app.
+4. In Meta's Messenger Webhooks settings, set the callback URL to
+   `https://YOUR-DOMAIN/api/messenger/webhook`, enter the same verify token,
+   and subscribe the Page to the `messages` webhook field.
+5. Verify the webhook in Meta. Test by sending a text question to your Page.
+   The bot only sends replies to incoming user messages and uses FAQ answers
+   from the workbook.
+6. Before serving messages from people outside your app roles, check Meta's
+   current access-level and app-review requirements for the `pages_messaging`
+   permission.
 
-## Deploy on Vercel
+The webhook verifies Meta's `X-Hub-Signature-256` signature before processing
+events. Keep the app secret and Page access token private. Messenger's standard
+messaging window and other platform policies apply to replies.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Meta setup references:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Messenger Platform Webhooks](https://developers.facebook.com/docs/messenger-platform/webhooks/)
+- [Messenger Platform Send API](https://developers.facebook.com/docs/messenger-platform/send-messages/)
