@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 
 import ChatMessages from "./ChatMessages";
 import FAQOptions from "./FAQOptions";
+import { formatFaqQuestion } from "@/lib/formatFaqQuestion";
 
 export default function ChatWindow() {
   const [faqData, setFaqData] = useState([]);
@@ -108,7 +109,7 @@ export default function ChatWindow() {
     const userMessage = {
       id: `question-${item.id}-${Date.now()}`,
       role: "user",
-      content: item.question,
+      content: formatFaqQuestion(item),
     };
 
     // Get answer from Excel API data

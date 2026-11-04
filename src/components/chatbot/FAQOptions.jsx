@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { formatFaqQuestion } from "@/lib/formatFaqQuestion";
 
 export default function FAQOptions({ questions, onSelect }) {
   const [showAllQuestions, setShowAllQuestions] = useState(false);
@@ -23,7 +24,7 @@ export default function FAQOptions({ questions, onSelect }) {
             onClick={() => onSelect(question)}
             className="faq-button"
           >
-            <span>{question.question}</span>
+            <span>{formatFaqQuestion(question)}</span>
             <span className="faq-arrow" aria-hidden="true">›</span>
           </button>
         ))}

@@ -41,14 +41,14 @@ contains integrations such as Messenger.
 read and update that JSON file, leaving the original Excel workbook unchanged.
 Use `/api/faqs/{id}` to get, update, or delete one FAQ.
 
-Set `FAQ_ADMIN_TOKEN` in `.env.local` before making write requests. Send it as a
-Bearer token in the `Authorization` header. Keep this token private.
+In local development, write requests do not require a token. In production, set
+`FAQ_ADMIN_TOKEN` as a private environment variable and send it as a bearer token
+in the `Authorization` header. Do not expose or commit this token.
 
 Create a question:
 
 ```powershell
 Invoke-RestMethod -Uri http://localhost:3000/api/faqs -Method Post `
-  -Headers @{ Authorization = "Bearer YOUR_ADMIN_TOKEN" } `
   -ContentType "application/json" `
   -Body '{"category":"Products","question":"Where can I buy RC Labs?","answerEnglish":"Contact our Cambodia sales team.","answerKhmer":""}'
 ```
@@ -63,7 +63,6 @@ Replace a question by ID (include all fields):
 
 ```powershell
 Invoke-RestMethod -Uri http://localhost:3000/api/faqs/41 -Method Put `
-  -Headers @{ Authorization = "Bearer YOUR_ADMIN_TOKEN" } `
   -ContentType "application/json" `
   -Body '{"category":"Products","question":"Where can I buy RC Labs?","answerEnglish":"Ask our sales team.","answerKhmer":""}'
 ```
@@ -71,15 +70,14 @@ Invoke-RestMethod -Uri http://localhost:3000/api/faqs/41 -Method Put `
 Delete a question by ID:
 
 ```powershell
-Invoke-RestMethod -Uri http://localhost:3000/api/faqs/41 -Method Delete `
-  -Headers @{ Authorization = "Bearer YOUR_ADMIN_TOKEN" } `
+Invoke-RestMethod -Uri http://localhost:3000/api/faqs/41 -Method Delete
 ```
 
-Write requests return `401` if the token is missing or incorrect, and `503` if
-`FAQ_ADMIN_TOKEN` is not configured. Changes are saved on the server's local
-filesystem. For production, use a host with persistent writable storage or
-move FAQ storage to a database; some serverless hosts do not preserve local
-file changes between deployments or instances.
+In production, write requests return `401` if the token is missing or incorrect,
+and `503` if `FAQ_ADMIN_TOKEN` is not configured. Changes are saved on the
+server's local filesystem. For production, use a host with persistent writable
+storage or move FAQ storage to a database; some serverless hosts do not preserve
+local file changes between deployments or instances.
 
 ## Run locally
 
@@ -89,6 +87,8 @@ npm run dev
 ```
 
 Open `http://localhost:3000`.
+The development server binds to `127.0.0.1`, so token-free FAQ writes are
+available only from this computer.
 
 ## Connect a Facebook Page to Messenger
 
